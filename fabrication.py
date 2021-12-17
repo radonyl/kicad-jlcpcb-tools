@@ -34,6 +34,7 @@ from pcbnew import (
 from .helpers import PLUGIN_PATH, get_footprint_by_ref
 from collections import defaultdict
 
+
 class Fabrication:
     def __init__(self, parent):
         self.parent = parent
@@ -243,7 +244,7 @@ class Fabrication:
             writer = csv.writer(csvfile, delimiter=",")
             writer.writerow(["Comment", "Designator", "Footprint", "LCSC"])
             for part in self.parent.store.read_bom_parts():
-                value, ref, footprint, lcsc = part 
+                value, ref, footprint, lcsc = part
                 res = ref_header_re.search(ref)
                 ref_header = res[0] if res else ref
                 group_id = (ref_header, footprint, value, lcsc)
