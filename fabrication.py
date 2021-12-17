@@ -32,7 +32,7 @@ from pcbnew import (
 )
 
 from .helpers import PLUGIN_PATH, get_footprint_by_ref
-
+from collections import defaultdict
 
 class Fabrication:
     def __init__(self, parent):
@@ -234,6 +234,8 @@ class Fabrication:
 
     def generate_bom(self):
         """Generate BOM file."""
+        groups = defaultdict(list)
+        ref_header_re = re.compile(r"^\D+")
         bomname = f"BOM-{self.filename.split('.')[0]}.csv"
         with open(
             os.path.join(self.assemblydir, bomname), "w", newline="", encoding="utf-8"
@@ -241,5 +243,13 @@ class Fabrication:
             writer = csv.writer(csvfile, delimiter=",")
             writer.writerow(["Comment", "Designator", "Footprint", "LCSC"])
             for part in self.parent.store.read_bom_parts():
-                writer.writerow(part)
+                value, ref, footprint, lcsc = part 
+                res = ref_header_re.search(ref)
+                ref_header = res[0] if res else ref
+                group_id = (ref_header, footprint, value, lcsc)
+                self.logger.info(group_id)
+                groups[group_id].append(ref)
+            for header, refs in groups.items():
+                _, footprint, value, lcsc = header
+                writer.writerow((value, f'{",".join(refs)}', footprint, lcsc))
         self.logger.info(f"Finished generating BOM file")
